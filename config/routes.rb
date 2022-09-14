@@ -1,4 +1,4 @@
 Rails.application.routes.draw do
-  get'games/new'
   root 'games#new'
+  resources :games,only:%i[new create]
 end

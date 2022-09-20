@@ -7,5 +7,9 @@ class GamesController < ApplicationController
     redirect_to new_game_progress_path(game)
   end
 
+  def give_up
+  end
+  
+
 
 end

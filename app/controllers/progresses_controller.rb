@@ -10,33 +10,47 @@ class ProgressesController < ApplicationController
     current_game = Game.find(params[:game_id])
 
     # 回答した内容を保存
-    progress = current_game.progresses.new(cereate_params)
+    progress = current_game.progresses.new(create_params)
     progress.assign_sequence
     progress.save!
 
     # 絞り込みを実行
     @extract_comics = ExtractionAlgorithm.new(current_game).compute
 
-    next_question = Question.next_question(current_game)
-    if next_question.blank?
-
-      current_game.status = 'finished'
-      current_game.result = 'incorrect'
-      current_game.save!
-
+    # 絞り込み結果が0件の場合、ギブアップ画面へ遷移
+    if @extract_comics.count == 0
       redirect_to give_up_game_path(current_game)
       return
     end
 
 
-    redirect_to new_game_progress_path(current_game)
-    
-  end
+    # 絞り込み結果が1件の場合、チャレンジ（正解を当てに行く）へ遷移
+    if @extract_comics.count == 1
+      redirect_to challenge_game_path(current_game)
+      return
+    end
 
+    # 絞り込み結果が2件以上ある場合は次の質問へ遷移
+    if @extract_comics.count >= 2
+    # 次の質問が残っていない場合(全ての質問を終えた場合)、結果画面へ遷移
+      next_question = Question.next_question(current_game)
+      if next_question.blank?
+
+        current_game.status = 'finished'
+        current_game.result = :incorrect
+        current_game.save!
+
+        redirect_to give_up_game_path(current_game)
+        return
+      end
+      redirect_to new_game_progress_path(current_game)
+      return
+    end  
+  end
 
   private
 
-  def cereate_params
+  def create_params
     params.require(:progress).permit(:question_id,:answer)
   end
   

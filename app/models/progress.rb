@@ -5,6 +5,7 @@ class Progress < ApplicationRecord
 
   def assign_sequence
     next_sequence = 1
+
     if game.present?
       all_progress = game.progresses
       if all_progress.count > 0
@@ -13,6 +14,16 @@ class Progress < ApplicationRecord
     end
     self.sequence = next_sequence
   end
-  
+
+  def positive_answer?
+    Rails.logger.debug("answer is" + answer)
+    answer == 'positive'
+  end
+
+  def negative_answer?
+    answer =='negative'
+  end
+
+
 
 end
